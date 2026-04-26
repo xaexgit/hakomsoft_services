@@ -4,14 +4,13 @@ function createParticles() {
 
     let particleCount;
     if (window.innerWidth < 480) {
-        particleCount = 15; // Mobile
+        particleCount = 15;
     } else if (window.innerWidth < 768) {
-        particleCount = 25; // Tablet
+        particleCount = 25;
     } else {
-        particleCount = 40; // Desktop
+        particleCount = 40;
     }
-    
-    // Reduce particles on touch devices for performance
+
     if ('ontouchstart' in window) {
         particleCount = Math.floor(particleCount / 2);
     }
@@ -31,7 +30,7 @@ function createParticles() {
 function handleScrollAnimations() {
     const sections = document.querySelectorAll('.policy-section');
     if (!sections.length) return;
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -66,27 +65,27 @@ function initSmoothScrolling() {
 function initParallaxEffect() {
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
         const cards = document.querySelectorAll('.policy-section');
-        if(!cards.length) return;
+        if (!cards.length) return;
 
         const onMouseMove = (e) => {
             const x = e.clientX / window.innerWidth;
             const y = e.clientY / window.innerHeight;
 
             cards.forEach((card) => {
-                // Individualize the effect slightly
                 const speed = card.classList.contains('app-card') ? 2 : 1;
                 const rotateX = (y - 0.5) * speed * 2;
                 const rotateY = (x - 0.5) * speed * 2;
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                card.style.transform =
+                    `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
         };
 
         const onMouseLeave = () => {
             cards.forEach(card => {
-                card.style.transform = ''; // Reset on leave
+                card.style.transform = '';
             });
         };
-        
+
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseleave', onMouseLeave);
     }
