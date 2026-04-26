@@ -199,8 +199,10 @@ header p {
     box-shadow: none;
 }
 
-.policy-section:nth-child(even), .app-card:nth-child(even) { animation-delay: 0.2s; }
-.policy-section:nth-child(odd), .app-card:nth-child(odd) { animation-delay: 0.4s; }
+.policy-section:nth-child(even),
+.app-card:nth-child(even) { animation-delay: 0.2s; }
+.policy-section:nth-child(odd),
+.app-card:nth-child(odd) { animation-delay: 0.4s; }
 
 @keyframes slideInUp {
     0% { transform: translateY(100px) rotateX(45deg); opacity: 0; }
@@ -246,7 +248,7 @@ header p {
 /* --- App Grid Styles --- */
 .apps-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: var(--gap-large);
 }
 
@@ -322,7 +324,7 @@ header p {
 .app-card p {
     color: var(--text-secondary);
     margin-bottom: var(--gap-medium);
-    flex-grow: 1; 
+    flex-grow: 1;
 }
 
 .app-buttons {
@@ -334,7 +336,6 @@ header p {
     align-items: center;
 }
 
-/* UPDATED: Generic .app-btn style is now simpler */
 .app-btn {
     text-decoration: none;
     transition: all 0.3s ease;
@@ -359,8 +360,6 @@ header p {
     transform: scale(1.05);
     opacity: 0.9;
 }
-
-/* REMOVED: .app-btn.privacy style is no longer needed */
 
 .app-card.coming-soon {
     opacity: 0.6;
@@ -387,7 +386,7 @@ header p {
     .policy-section:hover::before, .app-card:hover::before {
         transform: scaleX(1);
     }
-    .app-card:hover {
+    .app-card.coming-soon:hover {
         opacity: 1;
         filter: grayscale(0);
     }
@@ -396,7 +395,6 @@ header p {
     }
 }
 
-/* ... (Rest of CSS is unchanged) ... */
 .contact-btn {
     display: inline-flex;
     align-items: center;
@@ -480,9 +478,7 @@ footer p:last-child {
     align-items: center;
     justify-content: center;
     width: clamp(40px, 8vw, 60px);
-    /* MODIFIED: Reduced minimum width */
     height: clamp(40px, 8vw, 60px);
-    /* MODIFIED: Reduced minimum height */
     border-radius: 50%;
     text-decoration: none;
     font-size: clamp(1.2rem, 3vw, 1.8rem);
@@ -493,9 +489,7 @@ footer p:last-child {
     border: 1px solid var(--glass-border);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     min-width: 40px;
-    /* MODIFIED: Reduced min-width to match clamp */
     min-height: 40px;
-    /* MODIFIED: Reduced min-height to match clamp */
 }
 
 .social-link::before {
@@ -607,15 +601,8 @@ footer p:last-child {
 }
 
 @keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 footer .social-media {
@@ -630,7 +617,6 @@ footer .social-media {
     border-radius: 50%;
 }
 
-/* --- Chinese Policy Modal Styles --- */
 .policy-modal-overlay {
     position: fixed;
     top: 0;
@@ -648,13 +634,8 @@ footer .social-media {
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .policy-modal-content {
@@ -668,15 +649,8 @@ footer .social-media {
 }
 
 @keyframes slideInUpModal {
-    from {
-        transform: translateY(50px) scale(0.95);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
+    from { transform: translateY(50px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .policy-modal-content::-webkit-scrollbar {
@@ -715,4 +689,17 @@ footer .social-media {
 .close-button:hover {
     color: var(--text-primary);
     transform: scale(1.1) rotate(90deg);
+}
+
+/* --- Responsive Media Queries --- */
+@media (max-width: 768px) {
+    .apps-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .apps-grid {
+        grid-template-columns: 1fr;
+    }
 }
