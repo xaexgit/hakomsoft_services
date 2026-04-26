@@ -91,6 +91,9 @@ body::before {
     width: 100%;
 }
 
+/* =============================================
+   HEADER
+   ============================================= */
 header {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -102,8 +105,7 @@ header {
     box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
-    transform-style: preserve-3d;
-    animation: slideInDown 1s ease-out;
+    animation: slideInDown 1s ease-out forwards;
 }
 
 header::before {
@@ -124,8 +126,8 @@ header::before {
 }
 
 @keyframes slideInDown {
-    0% { transform: translateY(-100px) rotateX(-90deg); opacity: 0; }
-    100% { transform: translateY(0) rotateX(0deg); opacity: 1; }
+    0% { transform: translateY(-80px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
 }
 
 header h1 {
@@ -136,7 +138,6 @@ header h1 {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: var(--gap-small);
-    text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
     animation: textGlow 3s ease-in-out infinite alternate;
 }
 
@@ -178,7 +179,12 @@ header p {
     50% { transform: scale(1.05); }
 }
 
-.policy-section, .apps-container {
+/* =============================================
+   SECTIONS & CARDS — FIX: removed CSS animation,
+   now handled fully by JS IntersectionObserver
+   ============================================= */
+.policy-section,
+.apps-container {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
@@ -188,8 +194,17 @@ header p {
     box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
-    animation: slideInUp 0.8s ease-out;
-    animation-fill-mode: both;
+
+    /* FIX: start hidden, JS will reveal on scroll */
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* FIX: visible state added by JS */
+.policy-section.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .apps-container {
@@ -198,19 +213,15 @@ header p {
     border: none;
     padding: 0;
     box-shadow: none;
+    /* FIX: apps-container itself is always visible,
+       only the child cards animate */
+    opacity: 1;
+    transform: none;
+    transition: none;
 }
 
-.policy-section:nth-child(even),
-.app-card:nth-child(even) { animation-delay: 0.2s; }
-.policy-section:nth-child(odd),
-.app-card:nth-child(odd) { animation-delay: 0.4s; }
-
-@keyframes slideInUp {
-    0% { transform: translateY(100px) rotateX(45deg); opacity: 0; }
-    100% { transform: translateY(0) rotateX(0deg); opacity: 1; }
-}
-
-.policy-section::before, .app-card::before {
+.policy-section::before,
+.app-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -222,7 +233,8 @@ header p {
     transition: transform 0.5s ease;
 }
 
-.policy-section h2, .apps-container h2 {
+.policy-section h2,
+.apps-container h2 {
     font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: 600;
     margin-bottom: var(--gap-medium);
@@ -232,7 +244,8 @@ header p {
     color: var(--text-primary);
 }
 
-.policy-section h2 i, .apps-container h2 i {
+.policy-section h2 i,
+.apps-container h2 i {
     font-size: clamp(1.3rem, 3vw, 1.8rem);
     background: var(--secondary-gradient);
     -webkit-background-clip: text;
@@ -246,7 +259,9 @@ header p {
     margin-bottom: var(--gap-medium);
 }
 
-/* --- App Grid Styles --- */
+/* =============================================
+   APP GRID
+   ============================================= */
 .apps-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -262,7 +277,18 @@ header p {
     backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--card-shadow);
+
+    /* FIX: stagger delays for cards */
+    transition: opacity 0.6s ease, transform 0.6s ease,
+                box-shadow 0.3s ease, border-color 0.3s ease;
 }
+
+.app-card:nth-child(1) { transition-delay: 0.05s; }
+.app-card:nth-child(2) { transition-delay: 0.10s; }
+.app-card:nth-child(3) { transition-delay: 0.15s; }
+.app-card:nth-child(4) { transition-delay: 0.20s; }
+.app-card:nth-child(5) { transition-delay: 0.25s; }
+.app-card:nth-child(6) { transition-delay: 0.30s; }
 
 .app-icon {
     width: clamp(70px, 15vw, 90px);
@@ -300,7 +326,9 @@ header p {
     margin-bottom: var(--gap-small);
 }
 
-/* --- Arabic Card RTL Support --- */
+/* =============================================
+   ARABIC CARD
+   ============================================= */
 .app-card.arabic {
     direction: rtl;
 }
@@ -320,6 +348,9 @@ header p {
     line-height: 2;
 }
 
+/* =============================================
+   APP STATUS BADGE
+   ============================================= */
 .app-status {
     font-size: 0.8rem;
     font-weight: 600;
@@ -348,6 +379,9 @@ header p {
     flex-grow: 1;
 }
 
+/* =============================================
+   APP BUTTONS
+   ============================================= */
 .app-buttons {
     display: flex;
     gap: var(--gap-medium);
@@ -383,8 +417,13 @@ header p {
 }
 
 .app-card.coming-soon {
-    opacity: 0.6;
+    opacity: 0;
     filter: grayscale(50%);
+}
+
+/* FIX: coming-soon visible state */
+.app-card.coming-soon.visible {
+    opacity: 0.6;
 }
 
 .app-card.coming-soon .app-btn.disabled {
@@ -398,24 +437,35 @@ header p {
     font-weight: 600;
 }
 
+/* =============================================
+   HOVER EFFECTS
+   ============================================= */
 @media (hover: hover) and (pointer: fine) {
-    .policy-section:hover, .app-card:hover {
-        transform: translateY(-10px) scale(1.02);
+    .policy-section:hover,
+    .app-card:hover {
         box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), var(--glow-shadow);
         border-color: rgba(102, 126, 234, 0.3);
+        transform: translateY(-8px);
     }
-    .policy-section:hover::before, .app-card:hover::before {
+
+    .policy-section:hover::before,
+    .app-card:hover::before {
         transform: scaleX(1);
     }
+
     .app-card.coming-soon:hover {
         opacity: 1;
         filter: grayscale(0);
     }
+
     .app-card:hover .app-icon {
         transform: scale(1.1) rotate(-5deg);
     }
 }
 
+/* =============================================
+   CONTACT BUTTON
+   ============================================= */
 .contact-btn {
     display: inline-flex;
     align-items: center;
@@ -438,11 +488,15 @@ header p {
     box-shadow: 0 25px 50px rgba(240, 147, 251, 0.5);
 }
 
+/* =============================================
+   FOOTER
+   ============================================= */
 footer {
     text-align: center;
     margin-top: clamp(40px, 8vw, 60px);
     padding: var(--gap-large) var(--gap-medium);
     color: var(--text-muted);
+    position: relative;
 }
 
 footer::before {
@@ -470,6 +524,9 @@ footer p:last-child {
     font-weight: 600;
 }
 
+/* =============================================
+   SOCIAL MEDIA
+   ============================================= */
 .social-media {
     margin-bottom: var(--gap-large);
     padding: var(--gap-medium) 0;
@@ -483,7 +540,6 @@ footer p:last-child {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
 }
 
 .social-links {
@@ -526,50 +582,20 @@ footer p:last-child {
     transform: scale(0);
 }
 
-.social-link.facebook {
-    background: rgba(24, 119, 242, 0.1);
-    color: #1877f2;
-}
+.social-link.facebook { background: rgba(24, 119, 242, 0.1); color: #1877f2; }
+.social-link.facebook::before { background: linear-gradient(135deg, #1877f2, #42a5f5); }
 
-.social-link.facebook::before {
-    background: linear-gradient(135deg, #1877f2, #42a5f5);
-}
+.social-link.instagram { background: rgba(225, 48, 108, 0.1); color: #e1306c; }
+.social-link.instagram::before { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); }
 
-.social-link.instagram {
-    background: rgba(225, 48, 108, 0.1);
-    color: #e1306c;
-}
+.social-link.youtube { background: rgba(255, 0, 0, 0.1); color: #ff0000; }
+.social-link.youtube::before { background: linear-gradient(135deg, #ff0000, #ff4444); }
 
-.social-link.instagram::before {
-    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
-}
+.social-link.linkedin { background: rgba(0, 119, 181, 0.1); color: #0077b5; }
+.social-link.linkedin::before { background: linear-gradient(135deg, #0077b5, #00a0dc); }
 
-.social-link.youtube {
-    background: rgba(255, 0, 0, 0.1);
-    color: #ff0000;
-}
-
-.social-link.youtube::before {
-    background: linear-gradient(135deg, #ff0000, #ff4444);
-}
-
-.social-link.linkedin {
-    background: rgba(0, 119, 181, 0.1);
-    color: #0077b5;
-}
-
-.social-link.linkedin::before {
-    background: linear-gradient(135deg, #0077b5, #00a0dc);
-}
-
-.social-link.twitter {
-    background: rgba(29, 161, 242, 0.1);
-    color: #1DA1F2;
-}
-
-.social-link.twitter::before {
-    background: linear-gradient(135deg, #1DA1F2, #0d8ddb);
-}
+.social-link.twitter { background: rgba(29, 161, 242, 0.1); color: #1DA1F2; }
+.social-link.twitter::before { background: linear-gradient(135deg, #1DA1F2, #0d8ddb); }
 
 @media (hover: hover) and (pointer: fine) {
     .social-link:hover {
@@ -577,35 +603,16 @@ footer p:last-child {
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         color: white;
     }
-
-    .social-link:hover::before {
-        transform: scale(1);
-    }
-
+    .social-link:hover::before { transform: scale(1); }
     .social-link:hover i {
         transform: scale(1.1);
         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
     }
-
-    .social-link.facebook:hover {
-        box-shadow: 0 15px 40px rgba(24, 119, 242, 0.4);
-    }
-
-    .social-link.instagram:hover {
-        box-shadow: 0 15px 40px rgba(225, 48, 108, 0.4);
-    }
-
-    .social-link.youtube:hover {
-        box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4);
-    }
-
-    .social-link.linkedin:hover {
-        box-shadow: 0 15px 40px rgba(0, 119, 181, 0.4);
-    }
-
-    .social-link.twitter:hover {
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    }
+    .social-link.facebook:hover { box-shadow: 0 15px 40px rgba(24, 119, 242, 0.4); }
+    .social-link.instagram:hover { box-shadow: 0 15px 40px rgba(225, 48, 108, 0.4); }
+    .social-link.youtube:hover { box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4); }
+    .social-link.linkedin:hover { box-shadow: 0 15px 40px rgba(0, 119, 181, 0.4); }
+    .social-link.twitter:hover { box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); }
 }
 
 @media (hover: none) or (pointer: coarse) {
@@ -621,11 +628,6 @@ footer p:last-child {
     position: relative;
 }
 
-@keyframes fadeInUp {
-    0% { opacity: 0; transform: translateY(30px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-
 footer .social-media {
     margin-top: var(--gap-large);
     padding-top: var(--gap-large);
@@ -638,6 +640,9 @@ footer .social-media {
     border-radius: 50%;
 }
 
+/* =============================================
+   MODAL
+   ============================================= */
 .policy-modal-overlay {
     position: fixed;
     top: 0;
@@ -651,12 +656,6 @@ footer .social-media {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .policy-modal-content {
@@ -665,29 +664,18 @@ footer .social-media {
     width: 100%;
     max-height: 85vh;
     overflow-y: auto;
-    animation: slideInUpModal 0.4s ease-out;
     margin-bottom: 0;
 }
 
-@keyframes slideInUpModal {
-    from { transform: translateY(50px) scale(0.95); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-.policy-modal-content::-webkit-scrollbar {
-    width: 10px;
-}
-
+.policy-modal-content::-webkit-scrollbar { width: 10px; }
 .policy-modal-content::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
 }
-
 .policy-modal-content::-webkit-scrollbar-thumb {
     background: var(--primary-gradient);
     border-radius: 10px;
 }
-
 .policy-modal-content::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #7b99ff 0%, #8c60c3 100%);
 }
@@ -712,7 +700,9 @@ footer .social-media {
     transform: scale(1.1) rotate(90deg);
 }
 
-/* --- Responsive Media Queries --- */
+/* =============================================
+   RESPONSIVE
+   ============================================= */
 @media (max-width: 768px) {
     .apps-grid {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
