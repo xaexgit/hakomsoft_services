@@ -1,3 +1,6 @@
+/* =============================================
+   PARTICLES
+   ============================================= */
 function createParticles() {
     const particlesContainer = document.getElementById('particles');
     if (!particlesContainer) return;
@@ -27,6 +30,11 @@ function createParticles() {
     }
 }
 
+/* =============================================
+   SCROLL ANIMATIONS — FIX
+   Only adds 'visible', never removes it.
+   Handles coming-soon opacity separately.
+   ============================================= */
 function handleScrollAnimations() {
     const sections = document.querySelectorAll('.policy-section');
     if (!sections.length) return;
@@ -35,11 +43,13 @@ function handleScrollAnimations() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
+                // Once visible, stop observing — prevents flicker on scroll up
+                observer.unobserve(entry.target);
             }
         });
     }, {
-        threshold: window.innerWidth < 768 ? 0.05 : 0.1,
-        rootMargin: '0px 0px -30px 0px'
+        threshold: 0.05,
+        rootMargin: '0px 0px -20px 0px'
     });
 
     sections.forEach(section => {
@@ -47,50 +57,45 @@ function handleScrollAnimations() {
     });
 }
 
+/* =============================================
+   SMOOTH SCROLLING
+   ============================================= */
 function initSmoothScrolling() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-            e.preventDefault();
             const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            e.preventDefault();
             const target = document.querySelector(targetId);
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
+                target.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
 }
 
+/* =============================================
+   PARALLAX — FIX
+   Removed transform on cards to prevent
+   conflict with visibility transform.
+   Only applies subtle background parallax.
+   ============================================= */
 function initParallaxEffect() {
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        const cards = document.querySelectorAll('.policy-section');
-        if (!cards.length) return;
+        const bg = document.querySelector('body::before');
 
-        const onMouseMove = (e) => {
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-
-            cards.forEach((card) => {
-                const speed = card.classList.contains('app-card') ? 2 : 1;
-                const rotateX = (y - 0.5) * speed * 2;
-                const rotateY = (x - 0.5) * speed * 2;
-                card.style.transform =
-                    `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            });
-        };
-
-        const onMouseLeave = () => {
-            cards.forEach(card => {
-                card.style.transform = '';
-            });
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseleave', onMouseLeave);
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 10;
+            const y = (e.clientY / window.innerHeight - 0.5) * 10;
+            document.body.style.setProperty('--parallax-x', `${x}px`);
+            document.body.style.setProperty('--parallax-y', `${y}px`);
+        });
     }
 }
 
+/* =============================================
+   RESIZE
+   ============================================= */
 function handleResize() {
     clearTimeout(window.resizeTimer);
     window.resizeTimer = setTimeout(() => {
@@ -98,18 +103,29 @@ function handleResize() {
     }, 250);
 }
 
+/* =============================================
+   REDUCED MOTION CHECK
+   ============================================= */
 function respectsReducedMotion() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/* =============================================
+   INIT
+   ============================================= */
 document.addEventListener('DOMContentLoaded', function () {
-    if (!respectsReducedMotion()) {
+
+    if (respectsReducedMotion()) {
+        // If user prefers reduced motion, just show everything immediately
+        document.querySelectorAll('.policy-section').forEach(el => {
+            el.classList.add('visible');
+        });
+    } else {
         createParticles();
+        handleScrollAnimations();
         initParallaxEffect();
     }
 
-    handleScrollAnimations();
     initSmoothScrolling();
-
     window.addEventListener('resize', handleResize);
 });
