@@ -1,60 +1,93 @@
 /* =============================================
-   PARTICLES
+   MOBILE MENU TOGGLE
+   ============================================= */
+function initMobileMenu() {
+    const menuBtn = document.getElementById('mobile-menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    const icon = menuBtn.querySelector('i');
+
+    if (!menuBtn || !navLinks || !icon) return;
+
+    menuBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+
+        if (navLinks.classList.contains('active')) {
+            icon.classList.replace('fa-bars', 'fa-times');
+        } else {
+            icon.classList.replace('fa-times', 'fa-bars');
+        }
+    });
+
+    document.querySelectorAll('.nav-links .nav-item').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            icon.classList.replace('fa-times', 'fa-bars');
+        });
+    });
+}
+
+/* =============================================
+   PARTICLES ENGINE
    ============================================= */
 function createParticles() {
     const particlesContainer = document.getElementById('particles');
     if (!particlesContainer) return;
 
-    let particleCount;
-    if (window.innerWidth < 480) {
-        particleCount = 15;
-    } else if (window.innerWidth < 768) {
-        particleCount = 25;
-    } else {
-        particleCount = 40;
-    }
-
-    if ('ontouchstart' in window) {
-        particleCount = Math.floor(particleCount / 2);
-    }
+    let particleCount = window.innerWidth < 768 ? 15 : 30;
+    if ('ontouchstart' in window) particleCount = Math.floor(particleCount / 2);
 
     particlesContainer.innerHTML = '';
 
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 15 + 's';
-        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+
+        const size = Math.random() * 2 + 1;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+
+        particle.animate([
+            { transform: 'translateY(0) scale(1)', opacity: Math.random() * 0.3 },
+            { transform: `translateY(-${Math.random() * 100 + 50}px) scale(${Math.random() + 0.5})`, opacity: 0 }
+        ], {
+            duration: Math.random() * 10000 + 10000,
+            iterations: Infinity,
+            delay: Math.random() * 5000
+        });
+
         particlesContainer.appendChild(particle);
     }
 }
 
 /* =============================================
-   SCROLL ANIMATIONS — FIX
-   Only adds 'visible', never removes it.
-   Handles coming-soon opacity separately.
+   SCROLL REVEAL ANIMATIONS
    ============================================= */
 function handleScrollAnimations() {
-    const sections = document.querySelectorAll('.policy-section');
-    if (!sections.length) return;
+    const elements = document.querySelectorAll('.section-fade');
+    if (!elements.length) return;
 
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry, index) => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                // Once visible, stop observing — prevents flicker on scroll up
+                if (entry.target.classList.contains('app-card')) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                } else {
+                    entry.target.classList.add('visible');
+                }
                 observer.unobserve(entry.target);
             }
         });
     }, {
-        threshold: 0.05,
-        rootMargin: '0px 0px -20px 0px'
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
     });
 
-    sections.forEach(section => {
-        observer.observe(section);
-    });
+    elements.forEach(el => observer.observe(el));
 }
 
 /* =============================================
@@ -68,64 +101,37 @@ function initSmoothScrolling() {
             e.preventDefault();
             const target = document.querySelector(targetId);
             if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
+                const offsetTop = target.getBoundingClientRect().top + window.scrollY - 80;
+                window.scrollTo({
+                    top: offsetTop,
+                    behavior: 'smooth'
+                });
             }
         });
     });
 }
 
 /* =============================================
-   PARALLAX — FIX
-   Removed transform on cards to prevent
-   conflict with visibility transform.
-   Only applies subtle background parallax.
-   ============================================= */
-function initParallaxEffect() {
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        const bg = document.querySelector('body::before');
-
-        document.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 10;
-            const y = (e.clientY / window.innerHeight - 0.5) * 10;
-            document.body.style.setProperty('--parallax-x', `${x}px`);
-            document.body.style.setProperty('--parallax-y', `${y}px`);
-        });
-    }
-}
-
-/* =============================================
-   RESIZE
-   ============================================= */
-function handleResize() {
-    clearTimeout(window.resizeTimer);
-    window.resizeTimer = setTimeout(() => {
-        createParticles();
-    }, 250);
-}
-
-/* =============================================
-   REDUCED MOTION CHECK
-   ============================================= */
-function respectsReducedMotion() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-/* =============================================
-   INIT
+   INITIALIZATION
    ============================================= */
 document.addEventListener('DOMContentLoaded', function () {
+    initMobileMenu();
+    initSmoothScrolling();
 
-    if (respectsReducedMotion()) {
-        // If user prefers reduced motion, just show everything immediately
-        document.querySelectorAll('.policy-section').forEach(el => {
-            el.classList.add('visible');
-        });
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.section-fade').forEach(el => el.classList.add('visible'));
     } else {
         createParticles();
         handleScrollAnimations();
-        initParallaxEffect();
     }
 
-    initSmoothScrolling();
-    window.addEventListener('resize', handleResize);
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                createParticles();
+            }
+        }, 250);
+    });
 });
